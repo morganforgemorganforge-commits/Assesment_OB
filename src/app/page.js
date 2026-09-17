@@ -79,7 +79,8 @@ export default function Page() {
   const handleApplyFix = useCallback(({ row, field, value }) => {
     setFileData(prev => {
       const newFileData = { ...prev };
-      const currentSheet = newFileData.sheets.find(s => s.name === (sheetName || newFileData.sheetNames[0]));
+      const currentSheetName = sheetName || newFileData.sheetNames[0];
+      const currentSheet = newFileData.sheets[currentSheetName];
       if (!currentSheet || !currentSheet.rows[row]) return prev;
       
       const newRows = [...currentSheet.rows];
@@ -94,7 +95,8 @@ export default function Page() {
   const handleBulkFix = useCallback((pattern) => {
     setFileData(prev => {
       const newFileData = { ...prev };
-      const currentSheet = newFileData.sheets.find(s => s.name === (sheetName || newFileData.sheetNames[0]));
+      const currentSheetName = sheetName || newFileData.sheetNames[0];
+      const currentSheet = newFileData.sheets[currentSheetName];
       if (!currentSheet) return prev;
       
       const newRows = [...currentSheet.rows];

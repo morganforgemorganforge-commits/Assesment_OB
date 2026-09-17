@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useState, useEffect } from 'react';
 import {
@@ -24,12 +24,6 @@ const STEPS = [
     title: 'AI-Powered Suggestions',
     description: 'Go deeper with AI analysis powered by OpenRouter. It catches subtle typos and context-aware anomalies that rules alone would miss — like "Actve" instead of "Active".',
     hint: 'Your data is analyzed securely and never stored.',
-  },
-  {
-    icon: <Zap size={36} />,
-    title: 'Bulk Pattern Fixes',
-    description: 'When the same issue appears across many rows (e.g. dates in DD/MM/YYYY format), we detect the pattern and let you fix all instances with a single click.',
-    hint: 'Confidence tiers tell you when to trust automation vs. defer to a human.',
   },
   {
     icon: <Table size={36} />,

@@ -165,10 +165,10 @@ export default function FileUpload({ onData }) {
           margin-top: 8px;
           padding: 9px 22px;
           background: var(--accent);
-          color: #fff;
+          color: #000;
           border-radius: var(--radius-sm);
           font-size: 0.875rem;
-          font-weight: 500;
+          font-weight: 600;
           transition: var(--transition);
         }
         .dropzone:hover .dropzone-btn {
