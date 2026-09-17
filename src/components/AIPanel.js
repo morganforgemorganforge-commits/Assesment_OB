@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useState, useEffect, useRef } from 'react';
 import { Sparkles, Check, X, AlertTriangle, ChevronRight, Brain, Zap, FileSearch, CheckCircle2 } from 'lucide-react';
@@ -96,7 +96,7 @@ export default function AIPanel({ rows, onApplyFix }) {
   /* ── CTA / empty state ── */
   if (!suggestions && !loading && !error) {
     return (
-      <div className="ai-cta">
+      <div className="ai-cta-wrapper">
         <div className="ai-cta-icon">
           <Sparkles size={32} />
         </div>
@@ -114,6 +114,33 @@ export default function AIPanel({ rows, onApplyFix }) {
           <Sparkles size={16} />
           Run AI Analysis
         </button>
+        <style jsx>{`
+          .ai-cta-wrapper {
+            display: flex; flex-direction: column; align-items: center;
+            text-align: center; padding: 56px 32px; max-width: 520px; margin: 0 auto;
+          }
+          .ai-cta-icon {
+            width: 72px; height: 72px; border-radius: 18px;
+            background: rgba(129,140,248,0.1); border: 1px solid rgba(129,140,248,0.22);
+            display: flex; align-items: center; justify-content: center;
+            color: #818cf8; margin-bottom: 20px;
+          }
+          .ai-cta-title { font-size: 1.25rem; font-weight: 700; color: #fff; margin-bottom: 12px; }
+          .ai-cta-desc  { font-size: 0.88rem; color: var(--text-secondary); line-height: 1.65; margin-bottom: 24px; }
+          .ai-cta-meta  {
+            display: flex; gap: 16px; flex-wrap: wrap; justify-content: center;
+            font-size: 0.78rem; color: var(--text-muted); margin-bottom: 32px;
+          }
+          .ai-run-btn {
+            display: inline-flex; align-items: center; gap: 8px;
+            background: #fff; color: #000; border: none;
+            padding: 13px 28px; border-radius: 8px;
+            font-size: 0.92rem; font-weight: 700; font-family: inherit;
+            cursor: pointer; transition: all 0.2s;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.35);
+          }
+          .ai-run-btn:hover { background: #e5e5e5; transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.4); }
+        `}</style>
       </div>
     );
   }
