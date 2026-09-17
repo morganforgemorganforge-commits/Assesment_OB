@@ -219,24 +219,37 @@ export default function AIPanel({ rows, onApplyFix }) {
                 <p className="flag-reason">{s.reason}</p>
 
                 {/* Diff + actions */}
+                {/* Diff + actions */}
                 {!decision ? (
-                  <div className="ai-card-diff-wrap">
-                    <div className="ai-card-diff-boxes">
-                      <div className="ai-diff-box ai-diff-before">
-                        <span className="ai-diff-label">ORIGINAL</span>
-                        <span className="ai-diff-val">{s.originalValue}</span>
+                  <div style={{ marginTop: 14, paddingTop: 14, borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+                    <div style={{ display: 'flex', alignItems: 'stretch', gap: 10, marginBottom: 12 }}>
+                      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 4, padding: '10px 14px', borderRadius: 8, minWidth: 0, background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)' }}>
+                        <span style={{ fontSize: '0.62rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#ef4444' }}>ORIGINAL</span>
+                        <span style={{ fontSize: '0.9rem', fontWeight: 600, wordBreak: 'break-all', color: '#fca5a5', textDecoration: 'line-through' }}>{s.originalValue}</span>
                       </div>
-                      <ChevronRight size={14} className="ai-diff-arrow" />
-                      <div className="ai-diff-box ai-diff-after">
-                        <span className="ai-diff-label">SUGGESTED</span>
-                        <span className="ai-diff-val">{s.suggestedValue}</span>
+                      <ChevronRight size={14} style={{ color: 'var(--text-muted)', flexShrink: 0, alignSelf: 'center' }} />
+                      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 4, padding: '10px 14px', borderRadius: 8, minWidth: 0, background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.2)' }}>
+                        <span style={{ fontSize: '0.62rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#10b981' }}>SUGGESTED</span>
+                        <span style={{ fontSize: '0.9rem', fontWeight: 600, wordBreak: 'break-all', color: '#6ee7b7' }}>{s.suggestedValue}</span>
                       </div>
                     </div>
-                    <div className="ai-card-btns">
-                      <button className="ai-btn ai-btn-accept" onClick={() => handleDecision(idx, 'accept', s)}>
+                    <div style={{ display: 'flex', gap: 8 }}>
+                      <button 
+                        className="ai-btn"
+                        style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '8px 18px', borderRadius: 7, fontSize: '0.84rem', fontWeight: 600, cursor: 'pointer', border: '1px solid rgba(16,185,129,0.3)', background: 'rgba(16,185,129,0.12)', color: '#34d399', transition: 'all 0.15s' }}
+                        onClick={() => handleDecision(idx, 'accept', s)}
+                        onMouseOver={(e) => { e.currentTarget.style.background = 'rgba(16,185,129,0.22)'; e.currentTarget.style.transform = 'translateY(-1px)'; }}
+                        onMouseOut={(e) => { e.currentTarget.style.background = 'rgba(16,185,129,0.12)'; e.currentTarget.style.transform = 'none'; }}
+                      >
                         <Check size={13} /> Accept
                       </button>
-                      <button className="ai-btn ai-btn-reject" onClick={() => handleDecision(idx, 'reject', s)}>
+                      <button 
+                        className="ai-btn"
+                        style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '8px 18px', borderRadius: 7, fontSize: '0.84rem', fontWeight: 600, cursor: 'pointer', border: '1px solid rgba(239,68,68,0.2)', background: 'rgba(239,68,68,0.08)', color: '#f87171', transition: 'all 0.15s' }}
+                        onClick={() => handleDecision(idx, 'reject', s)}
+                        onMouseOver={(e) => { e.currentTarget.style.background = 'rgba(239,68,68,0.18)'; e.currentTarget.style.transform = 'translateY(-1px)'; }}
+                        onMouseOut={(e) => { e.currentTarget.style.background = 'rgba(239,68,68,0.08)'; e.currentTarget.style.transform = 'none'; }}
+                      >
                         <X size={13} /> Reject
                       </button>
                     </div>
