@@ -220,21 +220,23 @@ export default function AIPanel({ rows, onApplyFix }) {
 
                 {/* Diff + actions */}
                 {!decision ? (
-                  <div className="ai-diff-row">
-                    <div className="ai-diff-box ai-diff-before">
-                      <span className="ai-diff-label">Original</span>
-                      <span className="ai-diff-val">{s.originalValue}</span>
+                  <div className="ai-card-diff-wrap">
+                    <div className="ai-card-diff-boxes">
+                      <div className="ai-diff-box ai-diff-before">
+                        <span className="ai-diff-label">ORIGINAL</span>
+                        <span className="ai-diff-val">{s.originalValue}</span>
+                      </div>
+                      <ChevronRight size={14} className="ai-diff-arrow" />
+                      <div className="ai-diff-box ai-diff-after">
+                        <span className="ai-diff-label">SUGGESTED</span>
+                        <span className="ai-diff-val">{s.suggestedValue}</span>
+                      </div>
                     </div>
-                    <ChevronRight size={14} style={{ color: 'var(--text-muted)', flexShrink: 0 }} />
-                    <div className="ai-diff-box ai-diff-after">
-                      <span className="ai-diff-label">Suggested</span>
-                      <span className="ai-diff-val">{s.suggestedValue}</span>
-                    </div>
-                    <div className="ai-diff-actions">
-                      <button className="btn-fix btn-fix-accept" onClick={() => handleDecision(idx, 'accept', s)}>
+                    <div className="ai-card-btns">
+                      <button className="ai-btn ai-btn-accept" onClick={() => handleDecision(idx, 'accept', s)}>
                         <Check size={13} /> Accept
                       </button>
-                      <button className="btn-fix btn-fix-reject" onClick={() => handleDecision(idx, 'reject', s)}>
+                      <button className="ai-btn ai-btn-reject" onClick={() => handleDecision(idx, 'reject', s)}>
                         <X size={13} /> Reject
                       </button>
                     </div>

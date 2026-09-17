@@ -411,32 +411,32 @@ export default function Page() {
                   ))}
                 </div>
 
-                {/* Tab content */}
+                {/* Tab content — always mounted so state persists on tab switch */}
                 <div className="tab-content card">
-                  {activeTab === 'quality' && (
+                  <div style={{ display: activeTab === 'quality' ? 'block' : 'none' }}>
                     <DataQualityPanel
                       flags={flags}
                       totalRows={rows.length}
                       onApplyFix={handleApplyFix}
                       onApplyBulkFix={handleBulkFix}
                     />
-                  )}
+                  </div>
 
-                  {activeTab === 'ai' && (
+                  <div style={{ display: activeTab === 'ai' ? 'block' : 'none' }}>
                     <AIPanel
                       rows={rows}
                       onApplyFix={handleApplyFix}
                     />
-                  )}
+                  </div>
 
-                  {activeTab === 'table' && (
+                  <div style={{ display: activeTab === 'table' ? 'block' : 'none' }}>
                     <DataTable
                       rows={rows}
                       headers={headers}
                       flags={flags}
                       fileName={fileData?.fileName}
                     />
-                  )}
+                  </div>
                 </div>
               </div>
             </div>
