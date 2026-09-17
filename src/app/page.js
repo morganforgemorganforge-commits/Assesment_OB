@@ -46,6 +46,7 @@ export default function Page() {
   const [config,      setConfig]      = useState(DEFAULT_CONFIG);
   const [activeTab,   setActiveTab]   = useState('quality');
   const [configOpen,  setConfigOpen]  = useState(true);
+  const [aiEdits,     setAiEdits]     = useState(new Set()); // tracks "row:field" keys
 
   // ── Derived sheet data ─────────────────────────────────────────────────────
   const sheetName = activeSheet || fileData?.sheetNames?.[0];
@@ -76,7 +77,7 @@ export default function Page() {
   };
 
   // ── Apply a single fix (accept button) ─────────────────────────────────────
-  const handleApplyFix = useCallback(({ row, field, value }) => {
+  const handleApplyFix = useCallback(({ row, field, value, fromAI }) => {
     setFileData(prev => {
       const newFileData = { ...prev };
       const currentSheetName = sheetName || newFileData.sheetNames[0];
@@ -89,6 +90,9 @@ export default function Page() {
       
       return newFileData;
     });
+    if (fromAI) {
+      setAiEdits(prev => new Set([...prev, `${row}:${field}`]));
+    }
   }, [sheetName]);
 
   // ── Apply a bulk pattern fix ───────────────────────────────────────────────
@@ -435,6 +439,7 @@ export default function Page() {
                       headers={headers}
                       flags={flags}
                       fileName={fileData?.fileName}
+                      aiEdits={aiEdits}
                     />
                   </div>
                 </div>

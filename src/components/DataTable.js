@@ -1,9 +1,9 @@
-﻿'use client';
+'use client';
 
 import { useState, useMemo, useCallback } from 'react';
 import {
   Table, Search, ChevronLeft, ChevronRight,
-  AlertTriangle, Copy, Download, FileDown
+  AlertTriangle, Copy, Download, FileDown, Sparkles
 } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { flaggedRowSet, flagsForRow } from '../lib/dataQuality';
@@ -14,10 +14,10 @@ const ISSUE_COLORS = {
   POSSIBLE_DUPLICATE: 'var(--orange)',
 };
 
-export default function DataTable({ rows, headers, flags, fileName }) {
+export default function DataTable({ rows, headers, flags, fileName, aiEdits = new Set() }) {
   const [search,      setSearch]      = useState('');
   const [page,        setPage]        = useState(1);
-  const [filter,      setFilter]      = useState('ALL'); // ALL | FLAGGED
+  const [filter,      setFilter]      = useState('ALL'); // ALL | FLAGGED | AI_EDITED
   const [exporting,   setExporting]   = useState(false);
   const PER_PAGE = 20;
 
@@ -25,10 +25,14 @@ export default function DataTable({ rows, headers, flags, fileName }) {
   const dupRows = useMemo(() => new Set(
     (flags || []).filter(f => f.issue === 'POSSIBLE_DUPLICATE').map(f => f.row)
   ), [flags]);
+  const aiEditedRows = useMemo(() => new Set(
+    [...aiEdits].map(key => parseInt(key.split(':')[0]))
+  ), [aiEdits]);
 
   const filtered = useMemo(() => {
     let data = rows.map((r, i) => ({ ...r, __idx: i }));
-    if (filter === 'FLAGGED') data = data.filter(r => badRows.has(r.__idx));
+    if (filter === 'FLAGGED')    data = data.filter(r => badRows.has(r.__idx));
+    if (filter === 'AI_EDITED')  data = data.filter(r => aiEditedRows.has(r.__idx));
     if (search.trim()) {
       const q = search.toLowerCase();
       data = data.filter(r =>
@@ -36,7 +40,7 @@ export default function DataTable({ rows, headers, flags, fileName }) {
       );
     }
     return data;
-  }, [rows, headers, search, filter, badRows]);
+  }, [rows, headers, search, filter, badRows, aiEditedRows]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PER_PAGE));
   const paged      = filtered.slice((page - 1) * PER_PAGE, page * PER_PAGE);
@@ -150,6 +154,18 @@ export default function DataTable({ rows, headers, flags, fileName }) {
               {badRows.size}
             </span>
           </button>
+          {aiEdits.size > 0 && (
+            <button
+              className={`btn btn-ghost${filter === 'AI_EDITED' ? ' active' : ''}`}
+              onClick={() => handleFilter('AI_EDITED')}
+            >
+              <Sparkles size={13} style={{ color: '#818cf8' }} />
+              AI edited
+              <span className="dt-count" style={{ background: 'rgba(129,140,248,0.15)', color: '#818cf8' }}>
+                {aiEditedRows.size}
+              </span>
+            </button>
+          )}
         </div>
       </div>
 
@@ -184,15 +200,29 @@ export default function DataTable({ rows, headers, flags, fileName }) {
                 >
                   <td style={{ color: 'var(--text-muted)', fontSize: '0.78rem' }}>{rowIdx + 1}</td>
                   {headers.map(h => {
-                    const cellFlags = rowFlags.filter(f => f.field === h);
-                    const cellColor = cellFlags.length ? ISSUE_COLORS[cellFlags[0].issue] : undefined;
+                    const cellFlags  = rowFlags.filter(f => f.field === h);
+                    const cellColor  = cellFlags.length ? ISSUE_COLORS[cellFlags[0].issue] : undefined;
+                    const isAiEdited = aiEdits.has(`${rowIdx}:${h}`);
                     return (
                       <td
                         key={h}
                         className={h === headers[0] ? 'highlight' : ''}
-                        style={cellColor ? { color: cellColor, fontWeight: 500 } : {}}
-                        title={cellFlags.length ? cellFlags[0].reason : undefined}
+                        style={{
+                          ...(cellColor ? { color: cellColor, fontWeight: 500 } : {}),
+                          ...(isAiEdited ? {
+                            background: 'rgba(16,185,129,0.06)',
+                            boxShadow: 'inset 0 0 0 1px rgba(16,185,129,0.25)',
+                          } : {}),
+                          position: 'relative',
+                        }}
+                        title={isAiEdited ? `✦ AI fixed: ${h}` : (cellFlags.length ? cellFlags[0].reason : undefined)}
                       >
+                        {isAiEdited && (
+                          <span style={{
+                            position: 'absolute', top: 3, right: 4,
+                            fontSize: '0.55rem', color: '#10b981', opacity: 0.8,
+                          }}>✦</span>
+                        )}
                         {String(row[h] ?? '')}
                       </td>
                     );

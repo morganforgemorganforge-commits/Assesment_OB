@@ -89,7 +89,7 @@ export default function AIPanel({ rows, onApplyFix }) {
   const handleDecision = (index, decision, suggestion) => {
     setDecisions(prev => ({ ...prev, [index]: decision }));
     if (decision === 'accept' && onApplyFix) {
-      onApplyFix({ row: suggestion.row, field: suggestion.field, value: suggestion.suggestedValue });
+      onApplyFix({ row: suggestion.row, field: suggestion.field, value: suggestion.suggestedValue, fromAI: true });
     }
   };
 
@@ -342,27 +342,54 @@ export default function AIPanel({ rows, onApplyFix }) {
 
         .ai-loader-sub { font-size:0.75rem; color:var(--text-muted); }
 
-        /* ── Diff row ── */
-        .ai-diff-row {
-          display:flex; align-items:center; gap:10px;
-          margin-top:12px; padding-top:12px;
-          border-top:1px solid rgba(255,255,255,0.06);
-          flex-wrap:wrap;
+        /* ── Diff layout ── */
+        .ai-card-diff-wrap {
+          margin-top: 14px;
+          padding-top: 14px;
+          border-top: 1px solid rgba(255,255,255,0.06);
+        }
+        .ai-card-diff-boxes {
+          display: flex;
+          align-items: stretch;
+          gap: 10px;
+          margin-bottom: 12px;
         }
         .ai-diff-box {
-          display:flex; flex-direction:column; gap:3px;
-          padding:8px 12px; border-radius:8px;
+          flex: 1;
+          display: flex; flex-direction: column; gap: 4px;
+          padding: 10px 14px; border-radius: 8px;
+          min-width: 0;
         }
-        .ai-diff-before { background:rgba(239,68,68,0.08); border:1px solid rgba(239,68,68,0.18); min-width:100px; }
-        .ai-diff-after  { background:rgba(16,185,129,0.08); border:1px solid rgba(16,185,129,0.18); min-width:100px; }
-        .ai-diff-label  { font-size:0.65rem; font-weight:800; text-transform:uppercase; letter-spacing:0.06em; }
-        .ai-diff-before .ai-diff-label { color:#ef4444; }
-        .ai-diff-after  .ai-diff-label { color:#10b981; }
-        .ai-diff-val    { font-size:0.88rem; font-weight:600; }
-        .ai-diff-before .ai-diff-val { color:#ef4444; text-decoration:line-through; }
-        .ai-diff-after  .ai-diff-val { color:#10b981; }
+        .ai-diff-before { background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.2); }
+        .ai-diff-after  { background: rgba(16,185,129,0.08); border: 1px solid rgba(16,185,129,0.2); }
+        .ai-diff-label  { font-size: 0.62rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; }
+        .ai-diff-before .ai-diff-label { color: #ef4444; }
+        .ai-diff-after  .ai-diff-label { color: #10b981; }
+        .ai-diff-val    { font-size: 0.9rem; font-weight: 600; word-break: break-all; }
+        .ai-diff-before .ai-diff-val { color: #fca5a5; text-decoration: line-through; }
+        .ai-diff-after  .ai-diff-val { color: #6ee7b7; }
+        .ai-diff-arrow  { color: var(--text-muted); flex-shrink: 0; align-self: center; }
 
-        .ai-diff-actions { display:flex; gap:6px; flex-shrink:0; margin-left:auto; align-self:center; }
+        /* ── Action buttons ── */
+        .ai-card-btns {
+          display: flex; gap: 8px;
+        }
+        .ai-btn {
+          display: inline-flex; align-items: center; gap: 6px;
+          padding: 8px 18px; border-radius: 7px;
+          font-size: 0.84rem; font-weight: 600; font-family: inherit;
+          cursor: pointer; border: 1px solid; transition: all 0.15s;
+        }
+        .ai-btn-accept {
+          background: rgba(16,185,129,0.12); color: #34d399;
+          border-color: rgba(16,185,129,0.3);
+        }
+        .ai-btn-accept:hover { background: rgba(16,185,129,0.22); transform: translateY(-1px); }
+        .ai-btn-reject {
+          background: rgba(239,68,68,0.08); color: #f87171;
+          border-color: rgba(239,68,68,0.2);
+        }
+        .ai-btn-reject:hover { background: rgba(239,68,68,0.18); transform: translateY(-1px); }
       `}</style>
     </div>
   );
