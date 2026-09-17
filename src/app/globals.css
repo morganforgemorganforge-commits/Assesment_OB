@@ -441,3 +441,75 @@ tbody td.highlight { color: var(--text-primary); font-weight: 500; }
   }
 }
 
+/* ─── Banner ──────────────────────────────────────────────────────────────── */
+.app-banner {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  padding: 0 16px;
+  text-align: center;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  overflow: hidden;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+.banner-normal {
+  background: #000;
+  border-bottom: 1px solid #333;
+  color: #fff;
+}
+.banner-rainbow {
+  background: var(--bg-background);
+  color: #fff;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+  text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+}
+.banner-content {
+  position: relative;
+  z-index: 1;
+}
+.banner-close {
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent;
+  border: none;
+  color: inherit;
+  opacity: 0.6;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: opacity 0.2s;
+}
+.banner-close:hover { opacity: 1; background: rgba(255,255,255,0.1); }
+
+.rainbow-bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  opacity: 0.7;
+}
+.rainbow-bg-1 {
+  background: linear-gradient(90deg, #ff0080, #7928ca);
+  animation: rainbow-shift 5s ease-in-out infinite alternate;
+}
+.rainbow-bg-2 {
+  background: linear-gradient(90deg, #00dfd8, #007cf0);
+  opacity: 0.5;
+  mix-blend-mode: overlay;
+}
+@keyframes rainbow-shift {
+  0%   { opacity: 0.7; background-position: 0% 50%; }
+  100% { opacity: 1;   background-position: 100% 50%; }
+}
+
+

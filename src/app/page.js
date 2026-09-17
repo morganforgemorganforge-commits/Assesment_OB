@@ -15,6 +15,7 @@ import ChartConfig     from '../components/ChartConfig';
 import DataChart       from '../components/DataChart';
 import DataQualityPanel from '../components/DataQualityPanel';
 import DataTable       from '../components/DataTable';
+import Banner          from '../components/Banner';
 import { runDataQuality, qualitySummary, flaggedRowSet, detectBulkPatterns } from '../lib/dataQuality';
 
 // ─── Tabs (Quality & Raw Data only) ────────────────────────────────────────
@@ -147,6 +148,14 @@ export default function Page() {
           )}
         </div>
       </header>
+
+      {/* ── Banner ──────────────────────────────────────────────────────── */}
+      <Banner
+        id="new-features-banner"
+        message="🎉 New features: Bulk Pattern Fixes and Confidence Tiers are now available!"
+        variant="normal"
+        height="2.5rem"
+      />
 
       {/* ═══════════════════════════════════════════════════════════════════════
           MAIN
@@ -284,6 +293,52 @@ export default function Page() {
                 <span> The chart below visualises <strong>{config.yAxis}</strong> broken down by <strong>{config.xAxis}</strong>.</span>
               )}
             </div>
+
+            {/* ── Body: sidebar + content ───────────────────────────────── */}
+            <div className="dash-body">
+
+              {/* Sidebar */}
+              <aside className="sidebar card">
+                <div className="sidebar-header" onClick={() => setConfigOpen(o => !o)}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <Settings2 size={15} style={{ color: 'var(--accent-light)' }} />
+                    <span style={{ fontSize: '0.85rem', fontWeight: 600 }}>Configuration</span>
+                  </div>
+                  <ChevronDown
+                    size={14}
+                    style={{
+                      color: 'var(--text-muted)',
+                      transform: configOpen ? 'rotate(180deg)' : 'none',
+                      transition: 'transform 0.2s',
+                    }}
+                  />
+                </div>
+
+                {configOpen && (
+                  <div className="sidebar-body animate-in">
+                    <ChartConfig
+                      headers={headers}
+                      sheetNames={fileData.sheetNames}
+                      config={{ ...config, sheet: sheetName }}
+                      onChange={handleConfig}
+                    />
+                  </div>
+                )}
+
+                <hr className="divider" />
+
+                {/* File info */}
+                <div className="file-info">
+                  <FileSpreadsheet size={13} style={{ color: 'var(--accent-light)', flexShrink: 0 }} />
+                  <div>
+                    <p style={{ fontSize: '0.8rem', color: 'var(--text-primary)', fontWeight: 500, wordBreak: 'break-all' }}>
+                      {fileData.fileName}
+                    </p>
+                    <p style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: 2 }}>
+                      {fileData.sheetNames.length} sheet{fileData.sheetNames.length !== 1 ? 's' : ''}
+                    </p>
+                  </div>
+                </div>
 
                 <button
                   className="btn btn-ghost"
