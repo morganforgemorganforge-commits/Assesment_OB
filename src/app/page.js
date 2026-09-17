@@ -77,26 +77,41 @@ export default function Page() {
 
   // ── Apply a single fix (accept button) ─────────────────────────────────────
   const handleApplyFix = useCallback(({ row, field, value }) => {
-    if (!sheetData || !sheetData.rows[row]) return;
-    sheetData.rows[row][field] = value;
-    // Force re-render by creating a new fileData reference
-    setFileData(prev => ({ ...prev }));
-  }, [sheetData]);
+    setFileData(prev => {
+      const newFileData = { ...prev };
+      const currentSheet = newFileData.sheets.find(s => s.name === (sheetName || newFileData.sheetNames[0]));
+      if (!currentSheet || !currentSheet.rows[row]) return prev;
+      
+      const newRows = [...currentSheet.rows];
+      newRows[row] = { ...newRows[row], [field]: value };
+      currentSheet.rows = newRows;
+      
+      return newFileData;
+    });
+  }, [sheetName]);
 
   // ── Apply a bulk pattern fix ───────────────────────────────────────────────
   const handleBulkFix = useCallback((pattern) => {
-    if (!sheetData) return;
-    // Find all flags matching this pattern and apply their suggestedFix
-    const currentFlags = runDataQuality(sheetData.rows, headers);
-    currentFlags.forEach(f => {
-      if (!f.suggestedFix) return;
-      if (f.field !== pattern.field || f.issue !== pattern.issue) return;
-      if (pattern.rowIndices.includes(f.row)) {
-        sheetData.rows[f.row][f.field] = f.suggestedFix.value;
-      }
+    setFileData(prev => {
+      const newFileData = { ...prev };
+      const currentSheet = newFileData.sheets.find(s => s.name === (sheetName || newFileData.sheetNames[0]));
+      if (!currentSheet) return prev;
+      
+      const newRows = [...currentSheet.rows];
+      const currentFlags = runDataQuality(newRows, headers);
+      
+      currentFlags.forEach(f => {
+        if (!f.suggestedFix) return;
+        if (f.field !== pattern.field || f.issue !== pattern.issue) return;
+        if (pattern.rowIndices.includes(f.row)) {
+          newRows[f.row] = { ...newRows[f.row], [f.field]: f.suggestedFix.value };
+        }
+      });
+      
+      currentSheet.rows = newRows;
+      return newFileData;
     });
-    setFileData(prev => ({ ...prev }));
-  }, [sheetData, headers]);
+  }, [sheetName, headers]);
 
   // ── Export to Excel ────────────────────────────────────────────────────────
   const handleExport = useCallback(() => {

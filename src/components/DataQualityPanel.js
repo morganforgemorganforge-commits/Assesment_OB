@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useState, useMemo, useCallback } from 'react';
 import {
@@ -210,45 +210,7 @@ export default function DataQualityPanel({ flags, totalRows, onApplyFix, onApply
                 {flag.reason}
               </p>
 
-              {/* Suggested Fix + Accept/Reject */}
-              {flag.suggestedFix && !decision && (
-                <div className="flag-fix-row">
-                  <div className="fix-suggestion">
-                    <ChevronRight size={13} style={{ color: 'var(--accent-light)', flexShrink: 0 }} />
-                    <span className="fix-label">
-                      Suggested: <strong>{flag.suggestedFix.label}</strong>
-                    </span>
-                  </div>
-                  <div className="fix-actions">
-                    <button
-                      className="btn-fix btn-fix-accept"
-                      onClick={() => handleDecision(fk, 'accept', { row: flag.row, field: flag.field, value: flag.suggestedFix.value })}
-                      title="Accept this fix"
-                    >
-                      <Check size={13} /> Accept
-                    </button>
-                    <button
-                      className="btn-fix btn-fix-reject"
-                      onClick={() => handleDecision(fk, 'reject', null)}
-                      title="Reject this fix"
-                    >
-                      <X size={13} /> Reject
-                    </button>
-                  </div>
-                </div>
-              )}
 
-              {/* Decision feedback */}
-              {decision === 'accept' && (
-                <div className="flag-decision flag-accepted">
-                  <Check size={13} /> Fix accepted — value updated
-                </div>
-              )}
-              {decision === 'reject' && (
-                <div className="flag-decision flag-rejected">
-                  <X size={13} /> Fix rejected — keeping original value
-                </div>
-              )}
             </div>
           );
         })}
