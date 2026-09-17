@@ -1,7 +1,11 @@
-'use client';
+﻿'use client';
 
-import { useState, useMemo } from 'react';
-import { Table, Search, ChevronLeft, ChevronRight, AlertTriangle, Copy } from 'lucide-react';
+import { useState, useMemo, useCallback } from 'react';
+import {
+  Table, Search, ChevronLeft, ChevronRight,
+  AlertTriangle, Copy, Download, FileDown
+} from 'lucide-react';
+import * as XLSX from 'xlsx';
 import { flaggedRowSet, flagsForRow } from '../lib/dataQuality';
 
 const ISSUE_COLORS = {
@@ -10,14 +14,17 @@ const ISSUE_COLORS = {
   POSSIBLE_DUPLICATE: 'var(--orange)',
 };
 
-export default function DataTable({ rows, headers, flags }) {
-  const [search, setSearch] = useState('');
-  const [page,   setPage]   = useState(1);
-  const [filter, setFilter] = useState('ALL'); // ALL | FLAGGED
+export default function DataTable({ rows, headers, flags, fileName }) {
+  const [search,      setSearch]      = useState('');
+  const [page,        setPage]        = useState(1);
+  const [filter,      setFilter]      = useState('ALL'); // ALL | FLAGGED
+  const [exporting,   setExporting]   = useState(false);
   const PER_PAGE = 20;
 
-  const badRows   = useMemo(() => flaggedRowSet(flags || []), [flags]);
-  const dupRows   = useMemo(() => new Set((flags || []).filter(f => f.issue === 'POSSIBLE_DUPLICATE').map(f => f.row)), [flags]);
+  const badRows = useMemo(() => flaggedRowSet(flags || []), [flags]);
+  const dupRows = useMemo(() => new Set(
+    (flags || []).filter(f => f.issue === 'POSSIBLE_DUPLICATE').map(f => f.row)
+  ), [flags]);
 
   const filtered = useMemo(() => {
     let data = rows.map((r, i) => ({ ...r, __idx: i }));
@@ -37,9 +44,84 @@ export default function DataTable({ rows, headers, flags }) {
   const handleFilter = (f) => { setFilter(f); setPage(1); };
   const handleSearch = (v) => { setSearch(v); setPage(1); };
 
+  /* ── Clean data rows (strip __idx) for export ── */
+  const cleanRows = useCallback(() =>
+    rows.map(r => {
+      const out = {};
+      headers.forEach(h => { out[h] = r[h] ?? ''; });
+      return out;
+    }),
+  [rows, headers]);
+
+  /* ── Export as Excel (.xlsx) ── */
+  const exportExcel = useCallback(() => {
+    setExporting(true);
+    try {
+      const ws = XLSX.utils.json_to_sheet(cleanRows(), { header: headers });
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, 'Cleaned Data');
+      const name = fileName ? `Cleaned_${fileName.replace(/\.[^.]+$/, '')}.xlsx` : 'Cleaned_Export.xlsx';
+      XLSX.writeFile(wb, name);
+    } finally {
+      setExporting(false);
+    }
+  }, [cleanRows, headers, fileName]);
+
+  /* ── Export as CSV ── */
+  const exportCSV = useCallback(() => {
+    setExporting(true);
+    try {
+      const ws = XLSX.utils.json_to_sheet(cleanRows(), { header: headers });
+      const csv = XLSX.utils.sheet_to_csv(ws);
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url  = URL.createObjectURL(blob);
+      const a    = document.createElement('a');
+      a.href     = url;
+      a.download = fileName ? `Cleaned_${fileName.replace(/\.[^.]+$/, '')}.csv` : 'Cleaned_Export.csv';
+      a.click();
+      URL.revokeObjectURL(url);
+    } finally {
+      setExporting(false);
+    }
+  }, [cleanRows, headers, fileName]);
+
   return (
     <div className="dt-root animate-in">
-      {/* ── Toolbar ────────────────────────────────────────────────────────── */}
+
+      {/* ── Export Banner ──────────────────────────────────────────────────── */}
+      <div className="export-bar">
+        <div className="export-bar-left">
+          <FileDown size={16} style={{ color: 'var(--accent-light)', flexShrink: 0 }} />
+          <div>
+            <div className="export-bar-title">Export current data</div>
+            <div className="export-bar-sub">
+              {rows.length.toLocaleString()} rows · {headers.length} columns · all accepted fixes included
+            </div>
+          </div>
+        </div>
+        <div className="export-bar-actions">
+          <button
+            className="export-btn export-btn-csv"
+            onClick={exportCSV}
+            disabled={exporting || rows.length === 0}
+            title="Download as CSV"
+          >
+            <Download size={14} />
+            Export CSV
+          </button>
+          <button
+            className="export-btn export-btn-excel"
+            onClick={exportExcel}
+            disabled={exporting || rows.length === 0}
+            title="Download as Excel"
+          >
+            <Download size={14} />
+            Export Excel
+          </button>
+        </div>
+      </div>
+
+      {/* ── Toolbar ─────────────────────────────────────────────────────────── */}
       <div className="dt-toolbar">
         <div className="dt-search-wrap">
           <Search size={14} className="dt-search-icon" />
@@ -71,7 +153,7 @@ export default function DataTable({ rows, headers, flags }) {
         </div>
       </div>
 
-      {/* ── Table ──────────────────────────────────────────────────────────── */}
+      {/* ── Table ───────────────────────────────────────────────────────────── */}
       <div className="table-wrapper">
         <table>
           <thead>
@@ -100,14 +182,10 @@ export default function DataTable({ rows, headers, flags }) {
                   className={isDup ? 'duplicate' : isBad ? 'flagged' : ''}
                   title={rowFlags.length ? rowFlags.map(f => f.reason).join('\n') : undefined}
                 >
-                  <td style={{ color: 'var(--text-muted)', fontSize: '0.78rem' }}>
-                    {rowIdx + 1}
-                  </td>
+                  <td style={{ color: 'var(--text-muted)', fontSize: '0.78rem' }}>{rowIdx + 1}</td>
                   {headers.map(h => {
                     const cellFlags = rowFlags.filter(f => f.field === h);
-                    const cellColor = cellFlags.length
-                      ? ISSUE_COLORS[cellFlags[0].issue]
-                      : undefined;
+                    const cellColor = cellFlags.length ? ISSUE_COLORS[cellFlags[0].issue] : undefined;
                     return (
                       <td
                         key={h}
@@ -138,10 +216,12 @@ export default function DataTable({ rows, headers, flags }) {
         </table>
       </div>
 
-      {/* ── Pagination ─────────────────────────────────────────────────────── */}
+      {/* ── Pagination ──────────────────────────────────────────────────────── */}
       <div className="dt-pagination">
         <span className="dt-page-info">
-          {filtered.length === 0 ? 'No rows' : `Showing ${(page-1)*PER_PAGE+1}–${Math.min(page*PER_PAGE, filtered.length)} of ${filtered.length} rows`}
+          {filtered.length === 0
+            ? 'No rows'
+            : `Showing ${(page-1)*PER_PAGE+1}–${Math.min(page*PER_PAGE, filtered.length)} of ${filtered.length} rows`}
         </span>
         <div className="dt-page-btns">
           <button className="btn btn-ghost dt-pg-btn" disabled={page === 1} onClick={() => setPage(p => p - 1)}>
@@ -157,35 +237,68 @@ export default function DataTable({ rows, headers, flags }) {
       <style jsx>{`
         .dt-root { display: flex; flex-direction: column; gap: 14px; }
 
-        .dt-toolbar {
-          display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+        /* Export bar */
+        .export-bar {
+          display: flex; align-items: center; justify-content: space-between;
+          gap: 16px; padding: 14px 18px;
+          background: rgba(255,255,255,0.03);
+          border: 1px solid rgba(255,255,255,0.1);
+          border-radius: 10px; flex-wrap: wrap;
         }
-        .dt-search-wrap {
-          position: relative; flex: 1; min-width: 220px;
-        }
-        .dt-search-icon {
-          position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
-          color: var(--text-muted); pointer-events: none;
-        }
-        .dt-search-input { padding-left: 34px; }
+        .export-bar-left  { display: flex; align-items: center; gap: 12px; }
+        .export-bar-title { font-size: 0.85rem; font-weight: 600; color: var(--text-primary); }
+        .export-bar-sub   { font-size: 0.75rem; color: var(--text-muted); margin-top: 2px; }
+        .export-bar-actions { display: flex; gap: 8px; flex-shrink: 0; }
 
-        .dt-filter-btns { display: flex; gap: 8px; }
+        .export-btn {
+          display: inline-flex; align-items: center; gap: 6px;
+          padding: 8px 16px; border-radius: 8px;
+          font-size: 0.8rem; font-weight: 600; font-family: inherit;
+          cursor: pointer; border: 1px solid transparent;
+          transition: all 0.18s; white-space: nowrap;
+        }
+        .export-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+        .export-btn-csv {
+          background: rgba(255,255,255,0.06);
+          border-color: rgba(255,255,255,0.12);
+          color: var(--text-secondary);
+        }
+        .export-btn-csv:hover:not(:disabled) {
+          background: rgba(255,255,255,0.12);
+          border-color: rgba(255,255,255,0.25);
+          color: var(--text-primary);
+        }
+        .export-btn-excel {
+          background: rgba(16,185,129,0.1);
+          border-color: rgba(16,185,129,0.3);
+          color: #10b981;
+        }
+        .export-btn-excel:hover:not(:disabled) {
+          background: rgba(16,185,129,0.2);
+          border-color: #10b981;
+          transform: translateY(-1px);
+        }
+
+        /* Toolbar */
+        .dt-toolbar        { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+        .dt-search-wrap    { position: relative; flex: 1; min-width: 220px; }
+        .dt-search-icon    { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-muted); pointer-events: none; }
+        .dt-search-input   { padding-left: 34px; }
+        .dt-filter-btns    { display: flex; gap: 8px; }
         .dt-count {
           display: inline-flex; align-items: center; justify-content: center;
           min-width: 22px; height: 18px; padding: 0 6px;
-          background: rgba(255,255,255,0.08);
-          border-radius: 99px;
+          background: rgba(255,255,255,0.08); border-radius: 99px;
           font-size: 0.7rem; font-weight: 700;
         }
 
-        .dt-pagination {
-          display: flex; align-items: center; justify-content: space-between;
-          flex-wrap: wrap; gap: 10px;
-        }
-        .dt-page-info { font-size: 0.8rem; color: var(--text-muted); }
-        .dt-page-btns { display: flex; align-items: center; gap: 8px; }
-        .dt-pg-btn    { padding: 8px; min-width: 36px; }
-        .dt-pg-label  { font-size: 0.85rem; color: var(--text-secondary); min-width: 60px; text-align: center; }
+        /* Pagination */
+        .dt-pagination  { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
+        .dt-page-info   { font-size: 0.8rem; color: var(--text-muted); }
+        .dt-page-btns   { display: flex; align-items: center; gap: 8px; }
+        .dt-pg-btn      { padding: 8px; min-width: 36px; }
+        .dt-pg-label    { font-size: 0.85rem; color: var(--text-secondary); min-width: 60px; text-align: center; }
       `}</style>
     </div>
   );

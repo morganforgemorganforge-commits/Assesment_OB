@@ -10,18 +10,23 @@ import {
   PieChart, Pie, Cell, ResponsiveContainer
 } from 'recharts';
 
+import * as XLSX       from 'xlsx';
+
 import FileUpload      from '../components/FileUpload';
 import ChartConfig     from '../components/ChartConfig';
 import DataChart       from '../components/DataChart';
 import DataQualityPanel from '../components/DataQualityPanel';
 import DataTable       from '../components/DataTable';
 import Banner          from '../components/Banner';
+import AIPanel         from '../components/AIPanel';
+import OnboardingTour  from '../components/OnboardingTour';
 import { runDataQuality, qualitySummary, flaggedRowSet, detectBulkPatterns } from '../lib/dataQuality';
 
-// ─── Tabs (Quality & Raw Data only) ────────────────────────────────────────
+// ─── Tabs ────────────────────────────────────────
 const TABS = [
-  { id: 'quality', label: 'Data Quality',  icon: <ShieldCheck size={15} /> },
-  { id: 'table',   label: 'Raw Data',      icon: <Table size={15} /> },
+  { id: 'quality', label: 'Data Quality',    icon: <ShieldCheck size={15} /> },
+  { id: 'ai',      label: 'AI Suggestions',  icon: <Sparkles size={15} /> },
+  { id: 'table',   label: 'Raw Data',        icon: <Table size={15} /> },
 ];
 
 const DONUT_COLORS = { clean: '#10b981', flagged: '#f59e0b', duplicate: '#f97316' };
@@ -93,6 +98,15 @@ export default function Page() {
     setFileData(prev => ({ ...prev }));
   }, [sheetData, headers]);
 
+  // ── Export to Excel ────────────────────────────────────────────────────────
+  const handleExport = useCallback(() => {
+    if (!rows || rows.length === 0) return;
+    const ws = XLSX.utils.json_to_sheet(rows, { header: headers });
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, sheetName || 'Data');
+    XLSX.writeFile(wb, `Exported_${fileData?.fileName || 'Data.xlsx'}`);
+  }, [rows, headers, sheetName, fileData]);
+
   const hasData    = rows.length > 0;
   const flagCount  = flags.length;
   const dupCount   = summary.POSSIBLE_DUPLICATE || 0;
@@ -103,6 +117,7 @@ export default function Page() {
 
   return (
     <div className="page-root">
+      <OnboardingTour />
       {/* ── Ambient glow orbs ───────────────────────────────────────────────── */}
       <div className="orb orb-1" />
       <div className="orb orb-2" />
@@ -144,6 +159,10 @@ export default function Page() {
                   )}
                 </button>
               )}
+              <button className="btn" onClick={handleExport} style={{ padding: '6px 12px', fontSize: '0.8rem', marginLeft: 'auto' }}>
+                <Upload size={14} style={{ transform: 'rotate(180deg)' }} />
+                Export Data
+              </button>
             </div>
           )}
         </div>
@@ -387,6 +406,13 @@ export default function Page() {
                       totalRows={rows.length}
                       onApplyFix={handleApplyFix}
                       onApplyBulkFix={handleBulkFix}
+                    />
+                  )}
+
+                  {activeTab === 'ai' && (
+                    <AIPanel
+                      rows={rows}
+                      onApplyFix={handleApplyFix}
                     />
                   )}
 
