@@ -185,13 +185,7 @@ export default function Page() {
         </div>
       </header>
 
-      {/* ── Banner ──────────────────────────────────────────────────────── */}
-      <Banner
-        id="new-features-banner"
-        message="🎉 New features: Bulk Pattern Fixes and Confidence Tiers are now available!"
-        variant="normal"
-        height="2.5rem"
-      />
+
 
       {/* ═══════════════════════════════════════════════════════════════════════
           MAIN
