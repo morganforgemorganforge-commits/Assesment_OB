@@ -159,10 +159,6 @@ export default function Page() {
                   )}
                 </button>
               )}
-              <button className="btn" onClick={handleExport} style={{ padding: '6px 12px', fontSize: '0.8rem', marginLeft: 'auto' }}>
-                <Upload size={14} style={{ transform: 'rotate(180deg)' }} />
-                Export Data
-              </button>
             </div>
           )}
         </div>
@@ -421,6 +417,7 @@ export default function Page() {
                       rows={rows}
                       headers={headers}
                       flags={flags}
+                      fileName={fileData?.fileName}
                     />
                   )}
                 </div>
